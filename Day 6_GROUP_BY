@@ -1,0 +1,750 @@
+# 📘 Day 6: GROUP BY & Aggregate Functions (Most Important SQL Topic)
+
+> **Goal:** Learn how to summarize data using `GROUP BY` and aggregate functions. This is one of the most frequently used SQL concepts in **Data Engineering**, **Data Analytics**, and interviews.
+
+---
+
+# Why Do We Need GROUP BY?
+
+Imagine you have an `Orders` table.
+
+| order_id | customer | department | amount |
+| -------- | -------- | ---------- | -----: |
+| 101      | John     | IT         |    500 |
+| 102      | David    | HR         |    700 |
+| 103      | John     | IT         |    300 |
+| 104      | Emma     | HR         |    900 |
+| 105      | John     | Finance    |    400 |
+
+Your manager asks:
+
+> **"What is the total sales for each department?"**
+
+Without `GROUP BY`, SQL returns individual rows.
+
+With `GROUP BY`, SQL combines rows that have the same value.
+
+---
+
+# What is GROUP BY?
+
+`GROUP BY` groups rows that have the same value in one or more columns.
+
+After grouping, you can apply **aggregate functions** like:
+
+* `COUNT()`
+* `SUM()`
+* `AVG()`
+* `MIN()`
+* `MAX()`
+
+---
+
+# Aggregate Functions
+
+## 1. COUNT()
+
+Counts rows.
+
+Example:
+
+```sql
+SELECT COUNT(*)
+FROM Orders;
+```
+
+Result:
+
+| COUNT(*) |
+| -------: |
+|        5 |
+
+---
+
+## 2. SUM()
+
+Adds values.
+
+```sql
+SELECT SUM(amount)
+FROM Orders;
+```
+
+Result:
+
+| SUM(amount) |
+| ----------: |
+|        2800 |
+
+Calculation:
+
+```text
+500 + 700 + 300 + 900 + 400 = 2800
+```
+
+---
+
+## 3. AVG()
+
+Calculates the average.
+
+```sql
+SELECT AVG(amount)
+FROM Orders;
+```
+
+Result:
+
+```text
+2800 / 5 = 560
+```
+
+---
+
+## 4. MIN()
+
+Returns the smallest value.
+
+```sql
+SELECT MIN(amount)
+FROM Orders;
+```
+
+Result:
+
+```text
+300
+```
+
+---
+
+## 5. MAX()
+
+Returns the largest value.
+
+```sql
+SELECT MAX(amount)
+FROM Orders;
+```
+
+Result:
+
+```text
+900
+```
+
+---
+
+# GROUP BY Example
+
+Question:
+
+> Total sales by department.
+
+```sql
+SELECT
+    department,
+    SUM(amount) AS total_sales
+FROM Orders
+GROUP BY department;
+```
+
+Result:
+
+| department | total_sales |
+| ---------- | ----------: |
+| Finance    |         400 |
+| HR         |        1600 |
+| IT         |         800 |
+
+How SQL works:
+
+### Step 1
+
+Group rows.
+
+```text
+IT
+500
+300
+```
+
+```text
+HR
+700
+900
+```
+
+```text
+Finance
+400
+```
+
+---
+
+### Step 2
+
+Apply `SUM()`.
+
+IT
+
+```text
+500 + 300 = 800
+```
+
+HR
+
+```text
+700 + 900 = 1600
+```
+
+Finance
+
+```text
+400
+```
+
+---
+
+# GROUP BY with COUNT()
+
+Count employees in each department.
+
+```sql
+SELECT
+    department,
+    COUNT(*) AS employee_count
+FROM Employees
+GROUP BY department;
+```
+
+Example Output
+
+| department | employee_count |
+| ---------- | -------------: |
+| IT         |              5 |
+| HR         |              3 |
+| Finance    |              2 |
+
+---
+
+# GROUP BY with AVG()
+
+Average salary by department.
+
+```sql
+SELECT
+    department,
+    AVG(salary) AS avg_salary
+FROM Employees
+GROUP BY department;
+```
+
+---
+
+# GROUP BY with MIN()
+
+Lowest salary in each department.
+
+```sql
+SELECT
+    department,
+    MIN(salary) AS lowest_salary
+FROM Employees
+GROUP BY department;
+```
+
+---
+
+# GROUP BY with MAX()
+
+Highest salary in each department.
+
+```sql
+SELECT
+    department,
+    MAX(salary) AS highest_salary
+FROM Employees
+GROUP BY department;
+```
+
+---
+
+# GROUP BY with Multiple Columns
+
+Example:
+
+```sql
+SELECT
+    department,
+    gender,
+    COUNT(*)
+FROM Employees
+GROUP BY
+    department,
+    gender;
+```
+
+Result
+
+| department | gender | count |
+| ---------- | ------ | ----: |
+| IT         | Male   |     3 |
+| IT         | Female |     2 |
+| HR         | Male   |     1 |
+| HR         | Female |     2 |
+
+SQL first groups by **department**, then by **gender**.
+
+---
+
+# Rules of GROUP BY (Very Important)
+
+Suppose you write:
+
+```sql
+SELECT
+    department,
+    employee_name,
+    SUM(salary)
+FROM Employees
+GROUP BY department;
+```
+
+❌ This is invalid in most SQL databases.
+
+Why?
+
+Within one department there are many employee names.
+
+Which one should SQL return?
+
+It doesn't know.
+
+### Rule
+
+Every column in `SELECT` must either:
+
+* Be inside an aggregate function, or
+* Be included in the `GROUP BY` clause.
+
+Correct:
+
+```sql
+SELECT
+    department,
+    SUM(salary)
+FROM Employees
+GROUP BY department;
+```
+
+---
+
+# Data Engineering Use Cases
+
+You will use `GROUP BY` almost every day to:
+
+* Calculate daily sales
+* Count active users
+* Total revenue by product
+* Average order value
+* Number of failed ETL jobs
+* Transactions per customer
+* Events per hour
+
+---
+
+# Common Interview Questions
+
+### Q1
+
+Difference between:
+
+```sql
+COUNT(*)
+```
+
+and
+
+```sql
+COUNT(column_name)
+```
+
+Example:
+
+| salary |
+| -----: |
+|   5000 |
+|   NULL |
+|   6000 |
+
+`COUNT(*)`
+
+Result
+
+```text
+3
+```
+
+Counts all rows.
+
+`COUNT(salary)`
+
+Result
+
+```text
+2
+```
+
+Ignores `NULL`.
+
+---
+
+### Q2
+
+Difference between
+
+```sql
+COUNT(*)
+```
+
+and
+
+```sql
+COUNT(DISTINCT department)
+```
+
+If departments are:
+
+```text
+IT
+HR
+IT
+Finance
+```
+
+`COUNT(*)`
+
+```text
+4
+```
+
+`COUNT(DISTINCT department)`
+
+```text
+3
+```
+
+---
+
+# Common Mistakes
+
+### Mistake 1
+
+Forgetting `GROUP BY`
+
+Wrong:
+
+```sql
+SELECT
+    department,
+    SUM(salary)
+FROM Employees;
+```
+
+---
+
+### Mistake 2
+
+Selecting columns that aren't grouped or aggregated.
+
+---
+
+### Mistake 3
+
+Thinking `GROUP BY` sorts data.
+
+It doesn't.
+
+Use `ORDER BY` if you need sorted results.
+
+---
+
+# Practice Exercises
+
+## Create Table
+
+```sql
+CREATE TABLE Employees (
+    employee_id INT,
+    employee_name VARCHAR(50),
+    department VARCHAR(20),
+    salary INT
+);
+```
+
+Insert:
+
+```sql
+INSERT INTO Employees VALUES
+(1,'Alice','IT',60000),
+(2,'Bob','IT',55000),
+(3,'Charlie','HR',45000),
+(4,'David','HR',50000),
+(5,'Eva','Finance',70000),
+(6,'Frank','IT',65000);
+```
+
+---
+
+# Exercise 1
+
+Find the total number of employees.
+
+---
+
+# Exercise 2
+
+Find the total salary paid by each department.
+
+---
+
+# Exercise 3
+
+Find the average salary for each department.
+
+---
+
+# Exercise 4
+
+Find the highest salary in each department.
+
+---
+
+# Exercise 5
+
+Find the lowest salary in each department.
+
+---
+
+# Exercise 6
+
+Find the number of employees in each department.
+
+---
+
+# Exercise 7 (Interview Level)
+
+Find the number of employees and the average salary for each department.
+
+Expected columns:
+
+* Department
+* Employee Count
+* Average Salary
+
+---
+
+# Challenge (Data Engineering)
+
+Create this table:
+
+| transaction_id | customer | city    | amount |
+| -------------- | -------- | ------- | -----: |
+| 1              | John     | Chennai |    500 |
+| 2              | John     | Chennai |    700 |
+| 3              | David    | Mumbai  |    300 |
+| 4              | Emma     | Chennai |    600 |
+| 5              | David    | Mumbai  |    900 |
+| 6              | Emma     | Delhi   |    400 |
+
+Write queries to answer:
+
+1. Total sales by city.
+2. Total sales by customer.
+3. Average sales by city.
+4. Number of transactions by customer.
+5. Highest transaction amount by city.
+
+---
+
+# 🎯 Interview Question (Think Before Running)
+
+Given:
+
+| department | salary |
+| ---------- | -----: |
+| IT         |  60000 |
+| IT         |  55000 |
+| HR         |  45000 |
+| HR         |  50000 |
+| Finance    |  70000 |
+
+What will this query return?
+
+```sql
+SELECT
+    department,
+    COUNT(*),
+    SUM(salary),
+    AVG(salary)
+FROM Employees
+GROUP BY department;
+```
+
+Explain the output before executing it.
+
+-- insert data
+INSERT INTO Orders (order_id, customer, gender, department, amount) VALUES (101, 'John', 'Male', 'IT', 500);
+INSERT INTO Orders (order_id, customer, gender, department, amount) VALUES (102, 'David', 'Male', 'HR', 700);
+INSERT INTO Orders (order_id, customer, gender, department, amount) VALUES (103, 'John', 'Male', 'IT', 300);
+INSERT INTO Orders (order_id, customer, gender, department, amount) VALUES (104, 'Emma', 'Female', 'HR', 900);
+INSERT INTO Orders (order_id, customer, gender, department, amount) VALUES (105, 'Carolyn', 'Female', 'Finance', 400);
+
+-- fetch all records
+SELECT * FROM Orders;
+
+---Aggregate Functions-------
+
+---count
+select count(*) AS COUNT_ORDERS from Orders;
+
+---SUM()
+select sum(amount) AS SUM_AMOUNT from Orders;
+
+----AVG()
+SELECT AVG(amount) AS AVG_AMOUNT FROM Orders;
+
+----MIN()
+SELECT MIN(amount) MIN_AMOUNT FROM Orders;
+
+---MAX()
+SELECT MAX(amount) AS MAXIMUM_AMOUNT FROM Orders;
+
+---------GROUP BY---------------
+SELECT department, SUM(amount) AS TOTAL_SALES
+FROM Orders
+GROUP BY department;
+-------------------------------------
+SELECT department, COUNT(*) AS EMPLOYEES_COUNT
+FROM Orders
+GROUP BY department;
+--------------------------------------------------
+SELECT department, AVG(amount) as AVERAGE_SALES
+FROM Orders
+GROUP BY department;
+--------------------------------------
+SELECT department, MIN(amount) AS lowest_salary
+FROM Orders
+GROUP BY department;
+-------------------------------------
+SELECT department, MAX(amount) AS highest_salary
+FROM Orders
+GROUP BY department;
+-----Multiple Group by----------------
+select department, gender, count(*)
+from Orders
+group by department, gender;
+------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------
+CREATE TABLE Employees (
+    employee_id INT,
+    employee_name VARCHAR(50),
+    department VARCHAR(20),
+    salary INT
+);
+
+INSERT INTO Employees VALUES
+(1,'Alice','IT',60000),
+(2,'Bob','IT',55000),
+(3,'Charlie','HR',45000),
+(4,'David','HR',50000),
+(5,'Eva','Finance',70000),
+(6,'Frank','IT',65000);
+
+select * from Employees;
+
+----Exercise 1 Find the total number of employees.
+SELECT COUNT(*) as Total_Employee
+FROM Employees;
+------Exercise 2 Find the total salary paid by each department.
+SELECT department, SUM(salary) DEPARTMENT_TOTAL_SALARY
+FROM Employees
+GROUP BY department;
+------Exercise 3 Find the average salary for each department.
+SELECT department, AVG(salary) AS average_salary
+FROM Employees
+GROUP BY department;
+----Exercise 4 Find the highest salary in each department.
+SELECT department, MAX(salary) AS highest_salary
+FROM Employees
+GROUP BY department;
+----Exercise 5 Find the lowest salary in each department.
+SELECT department, MIN(salary) AS lowest_salary
+FROM Employees
+GROUP BY department;
+----Exercise 6 Find the number of employees in each department.
+SELECT department, COUNT(department) AS count_employees_department
+FROM Employees
+GROUP BY department;
+----Exercise 7 (Interview Level) Find the number of employees and the average salary for each department.
+SELECT department, COUNT(*) AS Employee_Count, AVG(salary) AS Average_Salary
+FROM Employees
+GROUP BY department;
+--------------------------------------------------------------
+----------------------------------------------------------------------
+CREATE TABLE Employees_1 (
+  transaction_id INT,
+  customer VARCHAR(50),
+  city VARCHAR(20),
+  amount INT
+);
+
+INSERT INTO Employees_1 VALUES
+(1,'John','Chennai',500),
+(2,'John','Chennai',700),
+(3,'David','Mumbai',300),
+(4,'Emma','Chennai',600),
+(5,'David','Mumbai',900),
+(6,'Emma','Delhi',400);
+
+select * from Employees_1;
+
+----Total sales by city.
+SELECT city, sum(amount) as Total_sales_by_city
+FROM Employees_1
+GROUP BY city;
+
+----Total sales by customer.
+SELECT customer, sum(amount) as Total_sales_by_customer
+FROM Employees_1
+GROUP BY customer;
+
+----Average sales by city.
+SELECT city, AVG(amount) as Average_sales_by_city
+FROM Employees_1
+GROUP BY city;
+----Number of transactions by customer.
+SELECT customer, count(*) as transactions_by_customer
+FROM Employees_1
+GROUP BY customer;
+----Highest transaction amount by city.
+SELECT city, MAX(amount) as Highest_transaction_by_city
+FROM Employees_1
+GROUP BY city;
+---------------------
+SELECT
+    department,
+    COUNT(*),
+    SUM(salary),
+    AVG(salary)
+FROM Employees
+GROUP BY department;
+
+
+
+
+
+
+
+
